@@ -6,7 +6,19 @@ import StatsCard from '@components/StatsCard.astro';
 import GameTable from '@components/GameTable.astro';
 import { getGames } from '../../lib/queries';
 
-const games = getGames();
+const allGames = getGames();
+
+const filterPlatform = Astro.url.searchParams.get('platform') || '';
+const filterFormat   = Astro.url.searchParams.get('format')   || '';
+
+const games = allGames.filter(g => {
+  if (filterPlatform && g.platform !== filterPlatform) return false;
+  if (filterFormat   && g.format   !== filterFormat)   return false;
+  return true;
+});
+
+const uniquePlatforms = [...new Set(allGames.map(g => g.platform))].sort();
+const uniqueFormats   = [...new Set(allGames.map(g => g.format))].sort();
 
 const overall = { w: 0, l: 0, d: 0 };
 const raceMap = new Map<string, { w: number; l: number; d: number }>();
@@ -33,28 +45,71 @@ const PAGE_SIZE = 10;
 const totalPages = Math.max(1, Math.ceil(games.length / PAGE_SIZE));
 const page = Math.min(Math.max(1, Number(Astro.url.searchParams.get('page')) || 1), totalPages);
 const pagedGames = games.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+function pageUrl(p: number) {
+  const params = new URLSearchParams();
+  if (filterPlatform) params.set('platform', filterPlatform);
+  if (filterFormat)   params.set('format', filterFormat);
+  params.set('page', String(p));
+  return `?${params.toString()}`;
+}
 ---
 
 <BaseLayout title="Blood Bowl">
   <h1>Blood Bowl</h1>
   <StatsCard overall={overall} byRace={byRace} />
   <h2>Games</h2>
+  <form class="filters" method="get">
+    <label>
+      Platform
+      <select name="platform">
+        <option value="">All</option>
+        {uniquePlatforms.map(p => (
+          <option value={p} selected={p === filterPlatform}>{p}</option>
+        ))}
+      </select>
+    </label>
+    <label>
+      Format
+      <select name="format">
+        <option value="">All</option>
+        {uniqueFormats.map(f => (
+          <option value={f} selected={f === filterFormat}>{f}</option>
+        ))}
+      </select>
+    </label>
+    <button type="submit">Filter</button>
+    {(filterPlatform || filterFormat) && <a href="/blood-bowl">Clear</a>}
+  </form>
   <p><a href="/blood-bowl/add">+ Add game</a></p>
   <GameTable games={pagedGames} />
   <div class="pagination">
     {page > 1
-      ? <a href={`?page=${page - 1}`}>← Prev</a>
+      ? <a href={pageUrl(page - 1)}>← Prev</a>
       : <span class="disabled">← Prev</span>
     }
     <span class="page-info">Page {page} of {totalPages}</span>
     {page < totalPages
-      ? <a href={`?page=${page + 1}`}>Next →</a>
+      ? <a href={pageUrl(page + 1)}>Next →</a>
       : <span class="disabled">Next →</span>
     }
   </div>
 </BaseLayout>
 
 <style>
+  .filters {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+  .filters label {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8rem;
+    gap: 0.25rem;
+  }
   .pagination {
     display: flex;
     align-items: center;
