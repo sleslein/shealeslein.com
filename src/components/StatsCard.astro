@@ -19,9 +19,9 @@ const { overall, byRace } = Astro.props;
   <div class="overall">
     <span class="w">{overall.w}W</span>
     <span class="sep">/</span>
-    <span class="l">{overall.l}L</span>
-    <span class="sep">/</span>
     <span class="d">{overall.d}D</span>
+    <span class="sep">/</span>
+    <span class="l">{overall.l}L</span>
   </div>
 
   {byRace.length > 0 && (
@@ -30,8 +30,8 @@ const { overall, byRace } = Astro.props;
         <tr>
           <th>Race</th>
           <th>W</th>
-          <th>L</th>
           <th>D</th>
+          <th>L</th>
         </tr>
       </thead>
       <tbody>
@@ -39,8 +39,8 @@ const { overall, byRace } = Astro.props;
           <tr>
             <td>{r.race}</td>
             <td class="w">{r.w}</td>
-            <td class="l">{r.l}</td>
             <td class="d">{r.d}</td>
+            <td class="l">{r.l}</td>
           </tr>
         ))}
       </tbody>
