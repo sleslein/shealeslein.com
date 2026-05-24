@@ -7,7 +7,7 @@ export default defineConfig({
     format: 'directory'
   },
   output: 'server',
-  adapter: node({ mode: 'standalone' }),
+  adapter: node({ mode: 'standalone', trustProxy: true }),
   markdown: {
     shikiConfig: {
       theme: 'github-light',
