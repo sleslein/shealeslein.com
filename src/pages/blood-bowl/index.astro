@@ -39,6 +39,7 @@ const pagedGames = games.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   <h1>Blood Bowl</h1>
   <StatsCard overall={overall} byRace={byRace} />
   <h2>Games</h2>
+  <p><a href="/blood-bowl/add">+ Add game</a></p>
   <GameTable games={pagedGames} />
   <div class="pagination">
     {page > 1
@@ -51,7 +52,6 @@ const pagedGames = games.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
       : <span class="disabled">Next →</span>
     }
   </div>
-  <p><a href="/blood-bowl/add">+ Add game</a></p>
 </BaseLayout>
 
 <style>
