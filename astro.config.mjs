@@ -6,7 +6,7 @@ export default defineConfig({
   build: {
     format: 'directory'
   },
-  output: 'static',
+  output: 'server',
   adapter: node({ mode: 'standalone' }),
   markdown: {
     shikiConfig: {
