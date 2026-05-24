@@ -8,7 +8,7 @@ BACKUP_FILE="$BACKUP_DIR/bloodbowl-$TIMESTAMP.db"
 mkdir -p "$BACKUP_DIR"
 
 # Fly auto-stops idle machines; start it if needed before connecting via sftp
-MACHINE_ID=$(fly machine list | awk -F'│' 'NR>1 && /app/{gsub(/ /, "", $2); print $2; exit}')
+MACHINE_ID=$(fly machine list --json | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
 echo "Ensuring machine is running..."
 fly machine start "$MACHINE_ID" 2>/dev/null || true
 fly machine wait --state started "$MACHINE_ID"
