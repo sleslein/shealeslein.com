@@ -6,8 +6,9 @@ export default defineConfig({
   build: {
     format: 'directory'
   },
-  output: 'server',
-  adapter: node({ mode: 'standalone', trustProxy: true }),
+  output: 'static',
+  adapter: node({ mode: 'standalone' }),
+  security: { checkOrigin: false },
   markdown: {
     shikiConfig: {
       theme: 'github-light',
