@@ -4,7 +4,7 @@ import { formatDate } from '../utils/index.ts';
 
 export interface Props {
   post: {
-    slug: string;
+    id: string;
     data: {
       title: string;
       date: Date;
@@ -14,7 +14,7 @@ export interface Props {
 }
 
 const { post } = Astro.props;
-const url = `/posts/${post.slug}`;
+const url = `/posts/${post.id}`;
 ---
 
 <style>

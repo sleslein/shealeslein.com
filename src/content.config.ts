@@ -1,8 +1,8 @@
 import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 
-// Define a schema for post collections
 const postsCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.md', base: './src/content/posts', generateId: ({ entry }) => entry.replace(/\.md$/, '') }),
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),
@@ -13,7 +13,6 @@ const postsCollection = defineCollection({
   }),
 });
 
-// Export collections to register them in Astro
 export const collections = {
   'posts': postsCollection,
 };
