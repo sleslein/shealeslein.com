@@ -28,12 +28,45 @@ for (const g of games) {
 const byRace = Array.from(raceMap.entries())
   .map(([race, rec]) => ({ race, ...rec }))
   .sort((a, b) => a.race.localeCompare(b.race));
+
+const PAGE_SIZE = 10;
+const totalPages = Math.max(1, Math.ceil(games.length / PAGE_SIZE));
+const page = Math.min(Math.max(1, Number(Astro.url.searchParams.get('page')) || 1), totalPages);
+const pagedGames = games.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 ---
 
 <BaseLayout title="Blood Bowl">
   <h1>Blood Bowl</h1>
   <StatsCard overall={overall} byRace={byRace} />
   <h2>Games</h2>
-  <GameTable games={games} />
+  <GameTable games={pagedGames} />
+  <div class="pagination">
+    {page > 1
+      ? <a href={`?page=${page - 1}`}>← Prev</a>
+      : <span class="disabled">← Prev</span>
+    }
+    <span class="page-info">Page {page} of {totalPages}</span>
+    {page < totalPages
+      ? <a href={`?page=${page + 1}`}>Next →</a>
+      : <span class="disabled">Next →</span>
+    }
+  </div>
   <p><a href="/blood-bowl/add">+ Add game</a></p>
 </BaseLayout>
+
+<style>
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  .page-info {
+    font-size: 0.9rem;
+    color: var(--text-muted, #888);
+  }
+  .disabled {
+    color: var(--text-muted, #888);
+    cursor: default;
+  }
+</style>
