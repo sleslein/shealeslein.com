@@ -17,4 +17,8 @@ if ! fly sftp get /data/bloodbowl.db "$BACKUP_FILE"; then
   echo "Warning: /data/bloodbowl.db not found on remote — skipping backup."
   exit 0
 fi
+# Copy WAL files so the backup is consistent (SQLite WAL mode keeps writes
+# in these files until checkpointed into the main .db)
+fly sftp get /data/bloodbowl.db-shm "${BACKUP_FILE}-shm" 2>/dev/null || true
+fly sftp get /data/bloodbowl.db-wal "${BACKUP_FILE}-wal" 2>/dev/null || true
 echo "Backup saved → backups/bloodbowl-$TIMESTAMP.db"
