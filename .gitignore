@@ -23,6 +23,9 @@ yarn-error.log*
 # local dev database
 data/
 
+# pre-deploy DB backups
+backups/
+
 # Playwright output
 test-results/
 playwright-report/

@@ -33,13 +33,15 @@ Personal blog built with [Astro 5](https://astro.build), deployed on [Fly.io](ht
 
 ## Commands
 
-| Command           | Action                                      |
-|:----------------- |:------------------------------------------- |
-| `npm install`     | Install dependencies                        |
-| `npm run dev`     | Start dev server at `localhost:4321`        |
-| `npm run build`   | Build production site to `./dist/`          |
-| `npm run preview` | Preview production build locally            |
-| `npm run check`   | Run Astro type checking                     |
+| Command            | Action                                      |
+|:------------------ |:------------------------------------------- |
+| `npm install`      | Install dependencies                        |
+| `npm run dev`      | Start dev server at `localhost:4321`        |
+| `npm run build`    | Build production site to `./dist/`          |
+| `npm run preview`  | Preview production build locally            |
+| `npm run check`    | Run Astro type checking                     |
+| `npm run backup`   | Back up the production SQLite database      |
+| `npm run deploy`   | Back up the database, then deploy to Fly.io |
 
 ## Adding a Post
 
@@ -60,6 +62,25 @@ Post content here.
 
 The site runs on Fly.io in the `iad` region using the `@astrojs/node` standalone adapter. All blog posts are pre-rendered at build time. Future dynamic routes can opt out of prerendering with `export const prerender = false`.
 
+Use `npm run deploy` rather than `fly deploy` directly — it backs up the database before deploying:
+
 ```bash
-fly deploy
+npm run deploy
+```
+
+### Database backups
+
+The SQLite database lives on a Fly.io persistent volume at `/data/bloodbowl.db`. Before every deploy, `scripts/deploy.sh` downloads a timestamped copy to `backups/` (gitignored).
+
+To back up manually without deploying:
+
+```bash
+npm run backup
+# → backups/bloodbowl-YYYYMMDD-HHMMSS.db
+```
+
+To restore a backup:
+
+```bash
+fly sftp put backups/bloodbowl-<timestamp>.db /data/bloodbowl.db
 ```
