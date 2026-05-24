@@ -15,11 +15,11 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
-    "astro": "^5.18.0",
+    "astro": "^6.3.7",
     "dotenv": "^17.3.1"
   },
   "dependencies": {
-    "@astrojs/node": "^9.5.4",
+    "@astrojs/node": "^10.1.1",
     "@types/better-sqlite3": "^7.6.13",
     "better-sqlite3": "^12.6.2"
   }
