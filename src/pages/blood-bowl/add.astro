@@ -14,7 +14,7 @@ if (Astro.request.method === 'POST') {
   const form = await Astro.request.formData();
   const key = form.get('key') as string;
 
-  if (key !== import.meta.env.BLOOD_BOWL_KEY) {
+  if (key !== process.env.BLOOD_BOWL_KEY) {
     error = 'Invalid password.';
   } else {
     insertGame({

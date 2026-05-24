@@ -15,7 +15,7 @@ if (Astro.request.method === 'POST') {
   const key = form.get('key') as string;
   const id = Number(form.get('id'));
 
-  if (key !== import.meta.env.BLOOD_BOWL_KEY) {
+  if (key !== process.env.BLOOD_BOWL_KEY) {
     error = 'Invalid password.';
   } else {
     updateGame(id, {
