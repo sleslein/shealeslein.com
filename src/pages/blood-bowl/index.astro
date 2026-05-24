@@ -8,10 +8,22 @@ import { getGames } from '../../lib/queries';
 
 const allGames = getGames();
 
-const filterPlatform    = Astro.url.searchParams.get('platform')     || '';
-const filterFormat      = Astro.url.searchParams.get('format')       || '';
-const filterMyRace      = Astro.url.searchParams.get('my_race')      || '';
+const filterPlatform     = Astro.url.searchParams.get('platform')      || '';
+const filterFormat       = Astro.url.searchParams.get('format')        || '';
+const filterMyRace       = Astro.url.searchParams.get('my_race')       || '';
 const filterOpponentRace = Astro.url.searchParams.get('opponent_race') || '';
+
+// Build platform -> sorted formats map for both server-side filtering and client-side JS
+const formatsByPlatform: Record<string, string[]> = {};
+for (const g of allGames) {
+  if (!formatsByPlatform[g.platform]) formatsByPlatform[g.platform] = [];
+  if (!formatsByPlatform[g.platform].includes(g.format)) formatsByPlatform[g.platform].push(g.format);
+}
+for (const p of Object.keys(formatsByPlatform)) formatsByPlatform[p].sort();
+
+const allFormats    = [...new Set(allGames.map(g => g.format))].sort();
+const activeFormats = filterPlatform ? (formatsByPlatform[filterPlatform] ?? []) : allFormats;
+const resolvedFormat = filterPlatform && !activeFormats.includes(filterFormat) ? '' : filterFormat;
 
 const games = allGames.filter(g => {
   if (filterPlatform     && g.platform      !== filterPlatform)     return false;
@@ -24,19 +36,6 @@ const games = allGames.filter(g => {
 const uniquePlatforms     = [...new Set(allGames.map(g => g.platform))].sort();
 const uniqueMyRaces       = [...new Set(allGames.map(g => g.my_race))].sort();
 const uniqueOpponentRaces = [...new Set(allGames.map(g => g.opponent_race))].sort();
-
-// Build platform → sorted formats map for both server-side filtering and client-side JS
-const formatsByPlatform: Record<string, string[]> = {};
-for (const g of allGames) {
-  if (!formatsByPlatform[g.platform]) formatsByPlatform[g.platform] = [];
-  if (!formatsByPlatform[g.platform].includes(g.format)) formatsByPlatform[g.platform].push(g.format);
-}
-for (const p of Object.keys(formatsByPlatform)) formatsByPlatform[p].sort();
-
-const allFormats    = [...new Set(allGames.map(g => g.format))].sort();
-const activeFormats = filterPlatform ? (formatsByPlatform[filterPlatform] ?? []) : allFormats;
-// Reset format filter if it's not valid for the selected platform
-const resolvedFormat = filterPlatform && !activeFormats.includes(filterFormat) ? '' : filterFormat;
 
 const overall = { w: 0, l: 0, d: 0 };
 const raceMap = new Map<string, { w: number; l: number; d: number }>();
@@ -68,10 +67,10 @@ const hasFilters = !!(filterPlatform || resolvedFormat || filterMyRace || filter
 
 function pageUrl(p: number) {
   const params = new URLSearchParams();
-  if (filterPlatform)     params.set('platform',      filterPlatform);
-  if (resolvedFormat)     params.set('format',         resolvedFormat);
-  if (filterMyRace)       params.set('my_race',        filterMyRace);
-  if (filterOpponentRace) params.set('opponent_race',  filterOpponentRace);
+  if (filterPlatform)     params.set('platform',     filterPlatform);
+  if (resolvedFormat)     params.set('format',        resolvedFormat);
+  if (filterMyRace)       params.set('my_race',       filterMyRace);
+  if (filterOpponentRace) params.set('opponent_race', filterOpponentRace);
   params.set('page', String(p));
   return `?${params.toString()}`;
 }
@@ -125,13 +124,13 @@ function pageUrl(p: number) {
   <GameTable games={pagedGames} />
   <div class="pagination">
     {page > 1
-      ? <a href={pageUrl(page - 1)}>← Prev</a>
-      : <span class="disabled">← Prev</span>
+      ? <a href={pageUrl(page - 1)}>&#8592; Prev</a>
+      : <span class="disabled">&#8592; Prev</span>
     }
     <span class="page-info">Page {page} of {totalPages}</span>
     {page < totalPages
-      ? <a href={pageUrl(page + 1)}>Next →</a>
-      : <span class="disabled">Next →</span>
+      ? <a href={pageUrl(page + 1)}>Next &#8594;</a>
+      : <span class="disabled">Next &#8594;</span>
     }
   </div>
 </BaseLayout>
