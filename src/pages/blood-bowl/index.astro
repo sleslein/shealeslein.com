@@ -15,16 +15,28 @@ const filterOpponentRace = Astro.url.searchParams.get('opponent_race') || '';
 
 const games = allGames.filter(g => {
   if (filterPlatform     && g.platform      !== filterPlatform)     return false;
-  if (filterFormat       && g.format        !== filterFormat)       return false;
+  if (resolvedFormat     && g.format        !== resolvedFormat)     return false;
   if (filterMyRace       && g.my_race       !== filterMyRace)       return false;
   if (filterOpponentRace && g.opponent_race !== filterOpponentRace) return false;
   return true;
 });
 
 const uniquePlatforms     = [...new Set(allGames.map(g => g.platform))].sort();
-const uniqueFormats       = [...new Set(allGames.map(g => g.format))].sort();
 const uniqueMyRaces       = [...new Set(allGames.map(g => g.my_race))].sort();
 const uniqueOpponentRaces = [...new Set(allGames.map(g => g.opponent_race))].sort();
+
+// Build platform → sorted formats map for both server-side filtering and client-side JS
+const formatsByPlatform: Record<string, string[]> = {};
+for (const g of allGames) {
+  if (!formatsByPlatform[g.platform]) formatsByPlatform[g.platform] = [];
+  if (!formatsByPlatform[g.platform].includes(g.format)) formatsByPlatform[g.platform].push(g.format);
+}
+for (const p of Object.keys(formatsByPlatform)) formatsByPlatform[p].sort();
+
+const allFormats    = [...new Set(allGames.map(g => g.format))].sort();
+const activeFormats = filterPlatform ? (formatsByPlatform[filterPlatform] ?? []) : allFormats;
+// Reset format filter if it's not valid for the selected platform
+const resolvedFormat = filterPlatform && !activeFormats.includes(filterFormat) ? '' : filterFormat;
 
 const overall = { w: 0, l: 0, d: 0 };
 const raceMap = new Map<string, { w: number; l: number; d: number }>();
@@ -52,12 +64,12 @@ const totalPages = Math.max(1, Math.ceil(games.length / PAGE_SIZE));
 const page = Math.min(Math.max(1, Number(Astro.url.searchParams.get('page')) || 1), totalPages);
 const pagedGames = games.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-const hasFilters = !!(filterPlatform || filterFormat || filterMyRace || filterOpponentRace);
+const hasFilters = !!(filterPlatform || resolvedFormat || filterMyRace || filterOpponentRace);
 
 function pageUrl(p: number) {
   const params = new URLSearchParams();
   if (filterPlatform)     params.set('platform',      filterPlatform);
-  if (filterFormat)       params.set('format',         filterFormat);
+  if (resolvedFormat)     params.set('format',         resolvedFormat);
   if (filterMyRace)       params.set('my_race',        filterMyRace);
   if (filterOpponentRace) params.set('opponent_race',  filterOpponentRace);
   params.set('page', String(p));
@@ -72,7 +84,7 @@ function pageUrl(p: number) {
   <form class="filters" method="get">
     <label>
       Platform
-      <select name="platform">
+      <select name="platform" id="platform-select">
         <option value="">All</option>
         {uniquePlatforms.map(p => (
           <option value={p} selected={p === filterPlatform}>{p}</option>
@@ -81,10 +93,10 @@ function pageUrl(p: number) {
     </label>
     <label>
       Format
-      <select name="format">
+      <select name="format" id="format-select">
         <option value="">All</option>
-        {uniqueFormats.map(f => (
-          <option value={f} selected={f === filterFormat}>{f}</option>
+        {activeFormats.map(f => (
+          <option value={f} selected={f === resolvedFormat}>{f}</option>
         ))}
       </select>
     </label>
@@ -123,6 +135,22 @@ function pageUrl(p: number) {
     }
   </div>
 </BaseLayout>
+
+<script define:vars={{ formatsByPlatform, allFormats }}>
+  const platformSelect = document.getElementById('platform-select');
+  const formatSelect   = document.getElementById('format-select');
+
+  platformSelect.addEventListener('change', () => {
+    const platform = platformSelect.value;
+    const formats  = platform ? (formatsByPlatform[platform] ?? []) : allFormats;
+    const current  = formatSelect.value;
+
+    formatSelect.innerHTML = '<option value="">All</option>' +
+      formats.map(f => `<option value="${f}"${f === current ? ' selected' : ''}>${f}</option>`).join('');
+
+    if (platform && !formats.includes(current)) formatSelect.value = '';
+  });
+</script>
 
 <style>
   .filters {
