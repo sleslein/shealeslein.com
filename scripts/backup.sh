@@ -13,8 +13,8 @@ echo "Ensuring machine is running..."
 fly machine start "$MACHINE_ID" 2>/dev/null || true
 fly machine wait --state started "$MACHINE_ID"
 
-if ! fly sftp get /app/data/bloodbowl.db "$BACKUP_FILE" 2>/dev/null; then
-  echo "Warning: /app/data/bloodbowl.db not found on remote — skipping backup."
+if ! fly sftp get /data/bloodbowl.db "$BACKUP_FILE"; then
+  echo "Warning: /data/bloodbowl.db not found on remote — skipping backup."
   exit 0
 fi
 echo "Backup saved → backups/bloodbowl-$TIMESTAMP.db"
