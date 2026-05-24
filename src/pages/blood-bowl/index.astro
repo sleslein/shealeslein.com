@@ -8,17 +8,23 @@ import { getGames } from '../../lib/queries';
 
 const allGames = getGames();
 
-const filterPlatform = Astro.url.searchParams.get('platform') || '';
-const filterFormat   = Astro.url.searchParams.get('format')   || '';
+const filterPlatform    = Astro.url.searchParams.get('platform')     || '';
+const filterFormat      = Astro.url.searchParams.get('format')       || '';
+const filterMyRace      = Astro.url.searchParams.get('my_race')      || '';
+const filterOpponentRace = Astro.url.searchParams.get('opponent_race') || '';
 
 const games = allGames.filter(g => {
-  if (filterPlatform && g.platform !== filterPlatform) return false;
-  if (filterFormat   && g.format   !== filterFormat)   return false;
+  if (filterPlatform     && g.platform      !== filterPlatform)     return false;
+  if (filterFormat       && g.format        !== filterFormat)       return false;
+  if (filterMyRace       && g.my_race       !== filterMyRace)       return false;
+  if (filterOpponentRace && g.opponent_race !== filterOpponentRace) return false;
   return true;
 });
 
-const uniquePlatforms = [...new Set(allGames.map(g => g.platform))].sort();
-const uniqueFormats   = [...new Set(allGames.map(g => g.format))].sort();
+const uniquePlatforms     = [...new Set(allGames.map(g => g.platform))].sort();
+const uniqueFormats       = [...new Set(allGames.map(g => g.format))].sort();
+const uniqueMyRaces       = [...new Set(allGames.map(g => g.my_race))].sort();
+const uniqueOpponentRaces = [...new Set(allGames.map(g => g.opponent_race))].sort();
 
 const overall = { w: 0, l: 0, d: 0 };
 const raceMap = new Map<string, { w: number; l: number; d: number }>();
@@ -46,10 +52,14 @@ const totalPages = Math.max(1, Math.ceil(games.length / PAGE_SIZE));
 const page = Math.min(Math.max(1, Number(Astro.url.searchParams.get('page')) || 1), totalPages);
 const pagedGames = games.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+const hasFilters = !!(filterPlatform || filterFormat || filterMyRace || filterOpponentRace);
+
 function pageUrl(p: number) {
   const params = new URLSearchParams();
-  if (filterPlatform) params.set('platform', filterPlatform);
-  if (filterFormat)   params.set('format', filterFormat);
+  if (filterPlatform)     params.set('platform',      filterPlatform);
+  if (filterFormat)       params.set('format',         filterFormat);
+  if (filterMyRace)       params.set('my_race',        filterMyRace);
+  if (filterOpponentRace) params.set('opponent_race',  filterOpponentRace);
   params.set('page', String(p));
   return `?${params.toString()}`;
 }
@@ -78,8 +88,26 @@ function pageUrl(p: number) {
         ))}
       </select>
     </label>
+    <label>
+      My Race
+      <select name="my_race">
+        <option value="">All</option>
+        {uniqueMyRaces.map(r => (
+          <option value={r} selected={r === filterMyRace}>{r}</option>
+        ))}
+      </select>
+    </label>
+    <label>
+      Opponent Race
+      <select name="opponent_race">
+        <option value="">All</option>
+        {uniqueOpponentRaces.map(r => (
+          <option value={r} selected={r === filterOpponentRace}>{r}</option>
+        ))}
+      </select>
+    </label>
     <button type="submit">Filter</button>
-    {(filterPlatform || filterFormat) && <a href="/blood-bowl">Clear</a>}
+    {hasFilters && <a href="/blood-bowl">Clear</a>}
   </form>
   <p><a href="/blood-bowl/add">+ Add game</a></p>
   <GameTable games={pagedGames} />
