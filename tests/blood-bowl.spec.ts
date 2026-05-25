@@ -1,15 +1,19 @@
 import { test, expect, type Page } from '@playwright/test';
 import Database from 'better-sqlite3';
+import { execSync } from 'child_process';
 import path from 'path';
 
 const PASSWORD = process.env.BLOOD_BOWL_KEY ?? '';
-const TEST_DB = path.join(process.cwd(), 'data', 'test.db');
+const TEST_DB  = path.join(process.cwd(), 'data', 'test.db');
 
 test.beforeEach(() => {
   const db = new Database(TEST_DB);
   db.prepare('DELETE FROM games').run();
   db.close();
+  execSync('node scripts/seed-test.js', { env: { ...process.env, DB_PATH: TEST_DB } });
 });
+
+// --- Helpers for tests that need data beyond the seed ---
 
 type GameOverrides = Partial<{
   opponent_name: string;
@@ -50,9 +54,11 @@ function insertGame(overrides: GameOverrides = {}) {
 
 function insertGames(count: number, overrides: GameOverrides = {}) {
   for (let i = 0; i < count; i++) {
-    insertGame({ opponent_name: `Opponent ${i + 1}`, ...overrides });
+    insertGame({ opponent_name: `Extra Game ${i + 1}`, ...overrides });
   }
 }
+
+// --- UI helper ---
 
 async function addGame(page: Page, opponentName: string) {
   await page.goto('/blood-bowl/add');
@@ -70,6 +76,8 @@ async function addGame(page: Page, opponentName: string) {
   await expect(page).toHaveURL('/blood-bowl/');
 }
 
+// --- CRUD ---
+
 test('add a game', async ({ page }) => {
   const name = `Add-Test-${Date.now()}`;
   await addGame(page, name);
@@ -77,7 +85,7 @@ test('add a game', async ({ page }) => {
 });
 
 test('edit a game', async ({ page }) => {
-  const name = `Edit-Test-${Date.now()}`;
+  const name       = `Edit-Test-${Date.now()}`;
   const editedName = `Edited-${Date.now()}`;
   await addGame(page, name);
 
@@ -112,11 +120,8 @@ test('delete a game', async ({ page }) => {
 // --- W/D/L ordering ---
 
 test('stats card shows results in W/D/L order', async ({ page }) => {
-  insertGame({ result: 'W' });
-  insertGame({ result: 'D' });
-  insertGame({ result: 'L' });
+  // Seed contains Seed W Game, Seed D Game, Seed L Game
   await page.goto('/blood-bowl');
-
   const text = await page.locator('.overall').textContent() ?? '';
   expect(text.indexOf('W')).toBeLessThan(text.indexOf('D'));
   expect(text.indexOf('D')).toBeLessThan(text.indexOf('L'));
@@ -125,116 +130,92 @@ test('stats card shows results in W/D/L order', async ({ page }) => {
 // --- Add game link position ---
 
 test('add game link appears above the game table', async ({ page }) => {
-  insertGame();
   await page.goto('/blood-bowl');
-
   const linkY  = (await page.getByRole('link', { name: '+ Add game' }).boundingBox())!.y;
   const tableY = (await page.getByRole('table', { name: 'Games' }).boundingBox())!.y;
   expect(linkY).toBeLessThan(tableY);
 });
 
-// --- Pagination ---
+// --- Pagination (requires >10 games; insertGames adds on top of the 8 seeded) ---
 
 test('shows 10 games per page', async ({ page }) => {
-  insertGames(11);
+  insertGames(3); // 8 seeded + 3 = 11 total
   await page.goto('/blood-bowl');
-
   const rows = page.getByRole('table', { name: 'Games' }).getByRole('row');
   await expect(rows).toHaveCount(11); // 1 header + 10 data rows
 });
 
 test('next link navigates to page 2', async ({ page }) => {
-  insertGames(11);
+  insertGames(3); // 11 total → page 2 has 1 game
   await page.goto('/blood-bowl');
-
   await page.getByRole('link', { name: /Next/ }).click();
   await expect(page).toHaveURL(/page=2/);
-
   const rows = page.getByRole('table', { name: 'Games' }).getByRole('row');
-  await expect(rows).toHaveCount(2); // 1 header + 1 remaining game
+  await expect(rows).toHaveCount(2); // 1 header + 1 game
 });
 
 test('prev link navigates back to page 1', async ({ page }) => {
-  insertGames(11);
+  insertGames(3); // 11 total
   await page.goto('/blood-bowl?page=2');
-
   await page.getByRole('link', { name: /Prev/ }).click();
   await expect(page).toHaveURL(/page=1/);
-
   const rows = page.getByRole('table', { name: 'Games' }).getByRole('row');
-  await expect(rows).toHaveCount(11);
+  await expect(rows).toHaveCount(11); // 1 header + 10 data rows
 });
 
 test('prev is disabled on page 1', async ({ page }) => {
-  insertGame();
   await page.goto('/blood-bowl');
-
   await expect(page.getByRole('link', { name: /Prev/ })).not.toBeVisible();
   await expect(page.locator('.disabled', { hasText: 'Prev' })).toBeVisible();
 });
 
 test('next is disabled on the last page', async ({ page }) => {
-  insertGame();
+  // 8 seeded games fit on one page
   await page.goto('/blood-bowl');
-
   await expect(page.getByRole('link', { name: /Next/ })).not.toBeVisible();
   await expect(page.locator('.disabled', { hasText: 'Next' })).toBeVisible();
 });
 
-// --- Filters ---
+// --- Filters (use seed data directly) ---
 
 test('platform filter narrows results', async ({ page }) => {
-  insertGame({ opponent_name: 'BB3 Game',    platform: 'Blood Bowl 3', format: 'league' });
-  insertGame({ opponent_name: 'Fumbbl Game', platform: 'Fumbbl',       format: 'league' });
   await page.goto('/blood-bowl?platform=Blood+Bowl+3');
-
   const table = page.getByRole('table', { name: 'Games' });
-  await expect(table).toContainText('BB3 Game');
+  await expect(table).toContainText('Seed W Game');
   await expect(table).not.toContainText('Fumbbl Game');
 });
 
 test('format filter narrows results', async ({ page }) => {
-  insertGame({ opponent_name: 'League Game', format: 'league'  });
-  insertGame({ opponent_name: 'Ladder Game', format: 'ladder'  });
   await page.goto('/blood-bowl?format=league');
-
   const table = page.getByRole('table', { name: 'Games' });
-  await expect(table).toContainText('League Game');
+  await expect(table).toContainText('Seed W Game');
   await expect(table).not.toContainText('Ladder Game');
 });
 
 test('my race filter narrows results', async ({ page }) => {
-  insertGame({ opponent_name: 'Orc Game',   my_race: 'Orc'   });
-  insertGame({ opponent_name: 'Dwarf Game', my_race: 'Dwarf' });
   await page.goto('/blood-bowl?my_race=Orc');
-
   const table = page.getByRole('table', { name: 'Games' });
-  await expect(table).toContainText('Orc Game');
+  await expect(table).toContainText('Seed W Game');
   await expect(table).not.toContainText('Dwarf Game');
 });
 
 test('opponent race filter narrows results', async ({ page }) => {
-  insertGame({ opponent_name: 'vs Human', opponent_race: 'Human' });
-  insertGame({ opponent_name: 'vs Skaven', opponent_race: 'Skaven' });
   await page.goto('/blood-bowl?opponent_race=Human');
-
   const table = page.getByRole('table', { name: 'Games' });
-  await expect(table).toContainText('vs Human');
-  await expect(table).not.toContainText('vs Skaven');
+  await expect(table).toContainText('Seed W Game');
+  await expect(table).not.toContainText('Skaven Game');
 });
 
 test('clear link resets all filters', async ({ page }) => {
-  insertGame({ opponent_name: 'BB3 Game', platform: 'Blood Bowl 3' });
   await page.goto('/blood-bowl?platform=Blood+Bowl+3');
-
   await page.getByRole('link', { name: 'Clear' }).click();
   await expect(page).toHaveURL('/blood-bowl');
 });
 
 test('filters are preserved in pagination links', async ({ page }) => {
-  insertGames(11, { platform: 'Blood Bowl 3', format: 'league' });
+  // 6 seeded BB3 games + 5 more = 11, triggering a second page
+  insertGames(5, { platform: 'Blood Bowl 3', format: 'league' });
   await page.goto('/blood-bowl?platform=Blood+Bowl+3');
-
   const nextHref = await page.getByRole('link', { name: /Next/ }).getAttribute('href');
   expect(nextHref).toContain('platform=Blood+Bowl+3');
 });
@@ -242,25 +223,16 @@ test('filters are preserved in pagination links', async ({ page }) => {
 // --- Format options scoped to platform ---
 
 test('selecting a platform updates format options to match', async ({ page }) => {
-  insertGame({ platform: 'tabletop', format: 'tournament' });
   await page.goto('/blood-bowl');
-
   await page.locator('#platform-select').selectOption('tabletop');
-
-  const formatOptions = page.locator('#format-select option');
-  const labels = await formatOptions.allTextContents();
+  const labels = await page.locator('#format-select option').allTextContents();
   expect(labels).toContain('tournament');
-  // league exists for BB3/Fumbbl but not tabletop
-  expect(labels).not.toContain('league');
+  expect(labels).not.toContain('ladder'); // ladder is BB3/Fumbbl only
 });
 
-test('format dropdown shows all options when no platform selected', async ({ page }) => {
-  insertGame({ platform: 'Blood Bowl 3', format: 'league'      });
-  insertGame({ platform: 'tabletop',     format: 'tournament'  });
+test('format dropdown shows all options when no platform is selected', async ({ page }) => {
   await page.goto('/blood-bowl');
-
-  const formatOptions = page.locator('#format-select option');
-  const labels = await formatOptions.allTextContents();
+  const labels = await page.locator('#format-select option').allTextContents();
   expect(labels).toContain('league');
   expect(labels).toContain('tournament');
 });
