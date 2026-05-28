@@ -130,42 +130,54 @@ test('next is disabled on the last page', async ({ page }) => {
 // --- Filters (use seed data directly) ---
 
 test('platform filter narrows results', async ({ page }) => {
-  await page.goto('/blood-bowl?platform=Blood+Bowl+3');
+  await page.goto('/blood-bowl');
+  await page.locator('#platform-select').selectOption('Blood Bowl 3');
+  await page.getByRole('button', { name: 'Filter' }).click();
   const table = page.getByRole('table', { name: 'Games' });
   await expect(table).toContainText('BB3 Extra 5');
   await expect(table).not.toContainText('Fumbbl Game');
 });
 
 test('format filter narrows results', async ({ page }) => {
-  await page.goto('/blood-bowl?format=league');
+  await page.goto('/blood-bowl');
+  await page.locator('#format-select').selectOption('league');
+  await page.getByRole('button', { name: 'Filter' }).click();
   const table = page.getByRole('table', { name: 'Games' });
   await expect(table).toContainText('BB3 Extra 5');
   await expect(table).not.toContainText('Ladder Game');
 });
 
 test('my race filter narrows results', async ({ page }) => {
-  await page.goto('/blood-bowl?my_race=Orc');
+  await page.goto('/blood-bowl');
+  await page.locator('select[name="my_race"]').selectOption('Orc');
+  await page.getByRole('button', { name: 'Filter' }).click();
   const table = page.getByRole('table', { name: 'Games' });
   await expect(table).toContainText('BB3 Extra 5');
   await expect(table).not.toContainText('Dwarf Game');
 });
 
 test('opponent race filter narrows results', async ({ page }) => {
-  await page.goto('/blood-bowl?opponent_race=Human');
+  await page.goto('/blood-bowl');
+  await page.locator('select[name="opponent_race"]').selectOption('Human');
+  await page.getByRole('button', { name: 'Filter' }).click();
   const table = page.getByRole('table', { name: 'Games' });
   await expect(table).toContainText('BB3 Extra 5');
   await expect(table).not.toContainText('Skaven Game');
 });
 
 test('clear link resets all filters', async ({ page }) => {
-  await page.goto('/blood-bowl?platform=Blood+Bowl+3');
+  await page.goto('/blood-bowl');
+  await page.locator('#platform-select').selectOption('Blood Bowl 3');
+  await page.getByRole('button', { name: 'Filter' }).click();
   await page.getByRole('link', { name: 'Clear' }).click();
   await expect(page).toHaveURL('/blood-bowl');
 });
 
 test('filters are preserved in pagination links', async ({ page }) => {
   // 11 seeded BB3 games trigger a second page when filtering by platform
-  await page.goto('/blood-bowl?platform=Blood+Bowl+3');
+  await page.goto('/blood-bowl');
+  await page.locator('#platform-select').selectOption('Blood Bowl 3');
+  await page.getByRole('button', { name: 'Filter' }).click();
   const nextHref = await page.getByRole('link', { name: /Next/ }).getAttribute('href');
   expect(nextHref).toContain('platform=Blood+Bowl+3');
 });
