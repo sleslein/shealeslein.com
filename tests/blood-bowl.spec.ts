@@ -13,51 +13,6 @@ test.beforeEach(() => {
   execSync('node scripts/seed-test.js', { env: { ...process.env, DB_PATH: TEST_DB } });
 });
 
-// --- Helpers for tests that need data beyond the seed ---
-
-type GameOverrides = Partial<{
-  opponent_name: string;
-  my_race: string;
-  opponent_race: string;
-  result: 'W' | 'L' | 'D';
-  score_for: number;
-  score_against: number;
-  date: string;
-  platform: string;
-  format: string;
-}>;
-
-function insertGame(overrides: GameOverrides = {}) {
-  const opts = {
-    opponent_name: 'Test Opponent',
-    my_race: 'Orc',
-    opponent_race: 'Human',
-    result: 'W' as const,
-    score_for: 2,
-    score_against: 1,
-    date: '2026-01-01',
-    platform: 'Blood Bowl 3',
-    format: 'league',
-    ...overrides,
-  };
-  const db = new Database(TEST_DB);
-  const myRaceId   = (db.prepare('SELECT id FROM teams     WHERE name = ?').get(opts.my_race)   as { id: number }).id;
-  const oppRaceId  = (db.prepare('SELECT id FROM teams     WHERE name = ?').get(opts.opponent_race) as { id: number }).id;
-  const platformId = (db.prepare('SELECT id FROM platforms WHERE name = ?').get(opts.platform)  as { id: number }).id;
-  const formatId   = (db.prepare('SELECT id FROM formats   WHERE name = ? AND platform_id = ?').get(opts.format, platformId) as { id: number }).id;
-  db.prepare(`
-    INSERT INTO games (opponent_name, my_race_id, opponent_race_id, result, score_for, score_against, date, platform_id, format_id, notes)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)
-  `).run(opts.opponent_name, myRaceId, oppRaceId, opts.result, opts.score_for, opts.score_against, opts.date, platformId, formatId);
-  db.close();
-}
-
-function insertGames(count: number, overrides: GameOverrides = {}) {
-  for (let i = 0; i < count; i++) {
-    insertGame({ opponent_name: `Extra Game ${i + 1}`, ...overrides });
-  }
-}
-
 // --- UI helper ---
 
 async function addGame(page: Page, opponentName: string) {
@@ -136,26 +91,23 @@ test('add game link appears above the game table', async ({ page }) => {
   expect(linkY).toBeLessThan(tableY);
 });
 
-// --- Pagination (requires >10 games; insertGames adds on top of the 8 seeded) ---
+// --- Pagination (13 seeded games: 10 on page 1, 3 on page 2) ---
 
 test('shows 10 games per page', async ({ page }) => {
-  insertGames(3); // 8 seeded + 3 = 11 total
   await page.goto('/blood-bowl');
   const rows = page.getByRole('table', { name: 'Games' }).getByRole('row');
   await expect(rows).toHaveCount(11); // 1 header + 10 data rows
 });
 
 test('next link navigates to page 2', async ({ page }) => {
-  insertGames(3); // 11 total → page 2 has 1 game
   await page.goto('/blood-bowl');
   await page.getByRole('link', { name: /Next/ }).click();
   await expect(page).toHaveURL(/page=2/);
   const rows = page.getByRole('table', { name: 'Games' }).getByRole('row');
-  await expect(rows).toHaveCount(2); // 1 header + 1 game
+  await expect(rows).toHaveCount(4); // 1 header + 3 games
 });
 
 test('prev link navigates back to page 1', async ({ page }) => {
-  insertGames(3); // 11 total
   await page.goto('/blood-bowl?page=2');
   await page.getByRole('link', { name: /Prev/ }).click();
   await expect(page).toHaveURL(/page=1/);
@@ -170,8 +122,7 @@ test('prev is disabled on page 1', async ({ page }) => {
 });
 
 test('next is disabled on the last page', async ({ page }) => {
-  // 8 seeded games fit on one page
-  await page.goto('/blood-bowl');
+  await page.goto('/blood-bowl?page=2');
   await expect(page.getByRole('link', { name: /Next/ })).not.toBeVisible();
   await expect(page.locator('.disabled', { hasText: 'Next' })).toBeVisible();
 });
@@ -181,28 +132,28 @@ test('next is disabled on the last page', async ({ page }) => {
 test('platform filter narrows results', async ({ page }) => {
   await page.goto('/blood-bowl?platform=Blood+Bowl+3');
   const table = page.getByRole('table', { name: 'Games' });
-  await expect(table).toContainText('Seed W Game');
+  await expect(table).toContainText('BB3 Extra 5');
   await expect(table).not.toContainText('Fumbbl Game');
 });
 
 test('format filter narrows results', async ({ page }) => {
   await page.goto('/blood-bowl?format=league');
   const table = page.getByRole('table', { name: 'Games' });
-  await expect(table).toContainText('Seed W Game');
+  await expect(table).toContainText('BB3 Extra 5');
   await expect(table).not.toContainText('Ladder Game');
 });
 
 test('my race filter narrows results', async ({ page }) => {
   await page.goto('/blood-bowl?my_race=Orc');
   const table = page.getByRole('table', { name: 'Games' });
-  await expect(table).toContainText('Seed W Game');
+  await expect(table).toContainText('BB3 Extra 5');
   await expect(table).not.toContainText('Dwarf Game');
 });
 
 test('opponent race filter narrows results', async ({ page }) => {
   await page.goto('/blood-bowl?opponent_race=Human');
   const table = page.getByRole('table', { name: 'Games' });
-  await expect(table).toContainText('Seed W Game');
+  await expect(table).toContainText('BB3 Extra 5');
   await expect(table).not.toContainText('Skaven Game');
 });
 
@@ -213,8 +164,7 @@ test('clear link resets all filters', async ({ page }) => {
 });
 
 test('filters are preserved in pagination links', async ({ page }) => {
-  // 6 seeded BB3 games + 5 more = 11, triggering a second page
-  insertGames(5, { platform: 'Blood Bowl 3', format: 'league' });
+  // 11 seeded BB3 games trigger a second page when filtering by platform
   await page.goto('/blood-bowl?platform=Blood+Bowl+3');
   const nextHref = await page.getByRole('link', { name: /Next/ }).getAttribute('href');
   expect(nextHref).toContain('platform=Blood+Bowl+3');

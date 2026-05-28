@@ -38,7 +38,13 @@ db.transaction(() => {
   ins.run('Dwarf Game',     dwarf, human,  'W', 1, 0, '2024-01-06', bb3,      fmt('league',     bb3));
   ins.run('Skaven Game',    orc,   skaven, 'W', 2, 1, '2024-01-07', bb3,      fmt('league',     bb3));
   ins.run('Tabletop Game',  orc,   human,  'W', 2, 0, '2024-01-08', tabletop, fmt('tournament', tabletop));
+  // Extra BB3 games: brings total to 13 (>10 for pagination) and BB3 to 11 (>10 when platform-filtered)
+  ins.run('BB3 Extra 1',    orc,   human,  'W', 2, 1, '2024-01-09', bb3,      fmt('league',     bb3));
+  ins.run('BB3 Extra 2',    orc,   human,  'W', 2, 1, '2024-01-10', bb3,      fmt('league',     bb3));
+  ins.run('BB3 Extra 3',    orc,   human,  'W', 2, 1, '2024-01-11', bb3,      fmt('league',     bb3));
+  ins.run('BB3 Extra 4',    orc,   human,  'W', 2, 1, '2024-01-12', bb3,      fmt('league',     bb3));
+  ins.run('BB3 Extra 5',    orc,   human,  'W', 2, 1, '2024-01-13', bb3,      fmt('league',     bb3));
 })();
 
 db.close();
-console.log('Seeded 8 test games into', DB_PATH);
+console.log('Seeded 13 test games into', DB_PATH);
