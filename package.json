@@ -13,6 +13,7 @@
     "test:ui": "playwright test --ui",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
+    "lint": "oxlint --tsconfig=tsconfig.json",
     "backup": "bash scripts/backup.sh",
     "deploy": "bash scripts/deploy.sh"
   },
@@ -25,6 +26,7 @@
     "@playwright/test": "^1.58.2",
     "astro": "^6.3.7",
     "dotenv": "^17.3.1",
-    "oxfmt": "^0.52.0"
+    "oxfmt": "^0.52.0",
+    "oxlint": "^1.67.0"
   }
 }
