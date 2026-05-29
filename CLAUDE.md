@@ -26,6 +26,7 @@ Despite the repo name, this is an **Astro 5** static blog (migrated from Elevent
 **Styling**: Single global CSS file at `src/styles/main.css` using CSS variables. No preprocessor or CSS-in-JS.
 
 **TypeScript path aliases** (configured in `tsconfig.json`):
+
 - `@components` → `src/components/`
 - `@layouts` → `src/layouts/`
 - `@styles` → `src/styles/`

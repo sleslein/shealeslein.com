@@ -11,17 +11,20 @@
     "check": "astro check",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "backup": "bash scripts/backup.sh",
     "deploy": "bash scripts/deploy.sh"
-  },
-  "devDependencies": {
-    "@playwright/test": "^1.58.2",
-    "astro": "^6.3.7",
-    "dotenv": "^17.3.1"
   },
   "dependencies": {
     "@astrojs/node": "^10.1.1",
     "@types/better-sqlite3": "^7.6.13",
     "better-sqlite3": "^12.6.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "astro": "^6.3.7",
+    "dotenv": "^17.3.1",
+    "oxfmt": "^0.52.0"
   }
 }
