@@ -1,6 +1,6 @@
 export function formatDate(date: Date): string {
-  const options = { year: "numeric", month: 'short', day: "numeric" } as const;
-  const formatter = new Intl.DateTimeFormat('en-US', options);
+  const options = { year: "numeric", month: "short", day: "numeric" } as const;
+  const formatter = new Intl.DateTimeFormat("en-US", options);
   return formatter.format(date);
 }
 

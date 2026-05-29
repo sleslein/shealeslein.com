@@ -33,15 +33,15 @@ Personal blog built with [Astro 5](https://astro.build), deployed on [Fly.io](ht
 
 ## Commands
 
-| Command            | Action                                      |
-|:------------------ |:------------------------------------------- |
-| `npm install`      | Install dependencies                        |
-| `npm run dev`      | Start dev server at `localhost:4321`        |
-| `npm run build`    | Build production site to `./dist/`          |
-| `npm run preview`  | Preview production build locally            |
-| `npm run check`    | Run Astro type checking                     |
-| `npm run backup`   | Back up the production SQLite database      |
-| `npm run deploy`   | Back up the database, then deploy to Fly.io |
+| Command           | Action                                      |
+| :---------------- | :------------------------------------------ |
+| `npm install`     | Install dependencies                        |
+| `npm run dev`     | Start dev server at `localhost:4321`        |
+| `npm run build`   | Build production site to `./dist/`          |
+| `npm run preview` | Preview production build locally            |
+| `npm run check`   | Run Astro type checking                     |
+| `npm run backup`  | Back up the production SQLite database      |
+| `npm run deploy`  | Back up the database, then deploy to Fly.io |
 
 ## Adding a Post
 
