@@ -131,7 +131,7 @@ test('next is disabled on the last page', async ({ page }) => {
 
 test('platform filter narrows results', async ({ page }) => {
   await page.goto('/blood-bowl');
-  await page.locator('#platform-select').selectOption('Blood Bowl 3');
+  await page.getByLabel('Platform').selectOption('Blood Bowl 3');
   await page.getByRole('button', { name: 'Filter' }).click();
   const table = page.getByRole('table', { name: 'Games' });
   await expect(table).toContainText('BB3 Extra 5');
@@ -140,7 +140,7 @@ test('platform filter narrows results', async ({ page }) => {
 
 test('format filter narrows results', async ({ page }) => {
   await page.goto('/blood-bowl');
-  await page.locator('#format-select').selectOption('league');
+  await page.getByLabel('Format').selectOption('league');
   await page.getByRole('button', { name: 'Filter' }).click();
   const table = page.getByRole('table', { name: 'Games' });
   await expect(table).toContainText('BB3 Extra 5');
@@ -149,7 +149,7 @@ test('format filter narrows results', async ({ page }) => {
 
 test('my race filter narrows results', async ({ page }) => {
   await page.goto('/blood-bowl');
-  await page.locator('select[name="my_race"]').selectOption('Orc');
+  await page.getByLabel('My Race').selectOption('Orc');
   await page.getByRole('button', { name: 'Filter' }).click();
   const table = page.getByRole('table', { name: 'Games' });
   await expect(table).toContainText('BB3 Extra 5');
@@ -158,7 +158,7 @@ test('my race filter narrows results', async ({ page }) => {
 
 test('opponent race filter narrows results', async ({ page }) => {
   await page.goto('/blood-bowl');
-  await page.locator('select[name="opponent_race"]').selectOption('Human');
+  await page.getByLabel('Opponent Race').selectOption('Human');
   await page.getByRole('button', { name: 'Filter' }).click();
   const table = page.getByRole('table', { name: 'Games' });
   await expect(table).toContainText('BB3 Extra 5');
@@ -167,7 +167,7 @@ test('opponent race filter narrows results', async ({ page }) => {
 
 test('clear link resets all filters', async ({ page }) => {
   await page.goto('/blood-bowl');
-  await page.locator('#platform-select').selectOption('Blood Bowl 3');
+  await page.getByLabel('Platform').selectOption('Blood Bowl 3');
   await page.getByRole('button', { name: 'Filter' }).click();
   await page.getByRole('link', { name: 'Clear' }).click();
   await expect(page).toHaveURL('/blood-bowl');
@@ -176,7 +176,7 @@ test('clear link resets all filters', async ({ page }) => {
 test('filters are preserved in pagination links', async ({ page }) => {
   // 11 seeded BB3 games trigger a second page when filtering by platform
   await page.goto('/blood-bowl');
-  await page.locator('#platform-select').selectOption('Blood Bowl 3');
+  await page.getByLabel('Platform').selectOption('Blood Bowl 3');
   await page.getByRole('button', { name: 'Filter' }).click();
   const nextHref = await page.getByRole('link', { name: /Next/ }).getAttribute('href');
   expect(nextHref).toContain('platform=Blood+Bowl+3');
@@ -186,15 +186,15 @@ test('filters are preserved in pagination links', async ({ page }) => {
 
 test('selecting a platform updates format options to match', async ({ page }) => {
   await page.goto('/blood-bowl');
-  await page.locator('#platform-select').selectOption('tabletop');
-  const labels = await page.locator('#format-select option').allTextContents();
+  await page.getByLabel('Platform').selectOption('tabletop');
+  const labels = await page.getByLabel('Format').locator('option').allTextContents();
   expect(labels).toContain('tournament');
   expect(labels).not.toContain('ladder'); // ladder is BB3/Fumbbl only
 });
 
 test('format dropdown shows all options when no platform is selected', async ({ page }) => {
   await page.goto('/blood-bowl');
-  const labels = await page.locator('#format-select option').allTextContents();
+  const labels = await page.getByLabel('Format').locator('option').allTextContents();
   expect(labels).toContain('league');
   expect(labels).toContain('tournament');
 });
