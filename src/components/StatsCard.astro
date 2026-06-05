@@ -12,6 +12,23 @@ interface Props {
 }
 
 const { overall, byRace } = Astro.props;
+
+function raceWinRate(r: RaceRecord) {
+  const total = r.w + r.d + r.l;
+  if (total === 0) return null;
+  return (r.w + r.d * 0.5) / total * 100;
+}
+
+function winRateClass(value: number | null) {
+  if (value === null || value === 50) return "win-rate-neutral";
+  return value > 50 ? "win-rate-positive" : "win-rate-negative";
+}
+
+const totalGames = overall.w + overall.d + overall.l;
+const winRateValue =
+  totalGames > 0 ? (overall.w + overall.d * 0.5) / totalGames * 100 : null;
+const winRate = winRateValue !== null ? winRateValue.toFixed(1) : null;
+const overallWinRateClass = winRateClass(winRateValue);
 ---
 
 <div class="stats-card">
@@ -22,6 +39,7 @@ const { overall, byRace } = Astro.props;
     <span class="d">{overall.d}D</span>
     <span class="sep">/</span>
     <span class="l">{overall.l}L</span>
+    {winRate !== null && <span class={`win-rate ${overallWinRateClass}`}>({winRate}%)</span>}
   </div>
 
   {byRace.length > 0 && (
@@ -32,17 +50,22 @@ const { overall, byRace } = Astro.props;
           <th>W</th>
           <th>D</th>
           <th>L</th>
+          <th>Win%</th>
         </tr>
       </thead>
       <tbody>
-        {byRace.map(r => (
-          <tr>
-            <td>{r.race}</td>
-            <td class="w">{r.w}</td>
-            <td class="d">{r.d}</td>
-            <td class="l">{r.l}</td>
-          </tr>
-        ))}
+        {byRace.map(r => {
+          const rv = raceWinRate(r);
+          return (
+            <tr>
+              <td>{r.race}</td>
+              <td class="w">{r.w}</td>
+              <td class="d">{r.d}</td>
+              <td class="l">{r.l}</td>
+              <td class={winRateClass(rv)}>{rv !== null ? `${rv.toFixed(1)}%` : "—"}</td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   )}
@@ -64,6 +87,13 @@ const { overall, byRace } = Astro.props;
   .w { color: green; }
   .l { color: red; }
   .d { color: goldenrod; }
+  .win-rate {
+    font-size: 1rem;
+    margin-left: 0.5rem;
+  }
+  .win-rate-positive { color: #3a9a3a; }
+  .win-rate-negative { color: #c0392b; }
+  .win-rate-neutral { color: var(--text-muted, #888); }
   .race-breakdown {
     border-collapse: collapse;
   }
