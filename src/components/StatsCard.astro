@@ -16,13 +16,19 @@ const { overall, byRace } = Astro.props;
 function raceWinRate(r: RaceRecord) {
   const total = r.w + r.d + r.l;
   if (total === 0) return null;
-  return (r.w + r.d * 0.5) / total * 100;
+  return ((r.w + r.d * 0.5) / total) * 100;
 }
 
 function winRateClass(value: number | null) {
   if (value === null || value === 50) return "win-rate-neutral";
   return value > 50 ? "win-rate-positive" : "win-rate-negative";
 }
+
+const byRaceSorted = [...byRace].sort((a, b) => {
+  const ra = raceWinRate(a) ?? -1;
+  const rb = raceWinRate(b) ?? -1;
+  return rb - ra;
+});
 
 const totalGames = overall.w + overall.d + overall.l;
 const winRateValue =
@@ -42,32 +48,30 @@ const overallWinRateClass = winRateClass(winRateValue);
     {winRate !== null && <span class={`win-rate ${overallWinRateClass}`}>({winRate}%)</span>}
   </div>
 
-  {byRace.length > 0 && (
-    <table class="race-breakdown">
-      <thead>
-        <tr>
-          <th>Race</th>
-          <th>W</th>
-          <th>D</th>
-          <th>L</th>
-          <th>Win%</th>
-        </tr>
-      </thead>
-      <tbody>
-        {byRace.map(r => {
+  {byRaceSorted.length > 0 && (
+    <div class="race-summary">
+      <h3>Win Rate by Opponent Race</h3>
+      <ul class="race-list">
+        {byRaceSorted.map(r => {
           const rv = raceWinRate(r);
           return (
-            <tr>
-              <td>{r.race}</td>
-              <td class="w">{r.w}</td>
-              <td class="d">{r.d}</td>
-              <td class="l">{r.l}</td>
-              <td class={winRateClass(rv)}>{rv !== null ? `${rv.toFixed(1)}%` : "—"}</td>
-            </tr>
+            <li class="race-row">
+              <span class="race-name">{r.race}</span>
+              <span class={`race-winrate ${winRateClass(rv)}`}>
+                {rv !== null ? `${rv.toFixed(1)}%` : "—"}
+              </span>
+              <span class="race-record">
+                <span class="w">{r.w}W</span>
+                <span class="sep">/</span>
+                <span class="d">{r.d}D</span>
+                <span class="sep">/</span>
+                <span class="l">{r.l}L</span>
+              </span>
+            </li>
           );
         })}
-      </tbody>
-    </table>
+      </ul>
+    </div>
   )}
 </div>
 
@@ -94,16 +98,34 @@ const overallWinRateClass = winRateClass(winRateValue);
   .win-rate-positive { color: #3a9a3a; }
   .win-rate-negative { color: #c0392b; }
   .win-rate-neutral { color: var(--text-muted, #888); }
-  .race-breakdown {
-    border-collapse: collapse;
+  .race-summary h3 {
+    font-size: 1rem;
+    margin: 1.25rem 0 0.5rem;
   }
-  .race-breakdown th,
-  .race-breakdown td {
-    padding: 0.25rem 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid var(--border, #eee);
+  .race-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
   }
-  .race-breakdown th {
+  .race-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+  .race-name {
+    width: 14rem;
+    font-size: 0.9rem;
+  }
+  .race-winrate {
     font-weight: bold;
+    font-size: 0.95rem;
+    width: 4rem;
+  }
+  .race-record {
+    font-size: 0.8rem;
+    color: var(--text-muted, #888);
   }
 </style>
