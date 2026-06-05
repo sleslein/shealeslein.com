@@ -8,10 +8,11 @@ interface RaceRecord {
 
 interface Props {
   overall: { w: number; l: number; d: number };
+  byMyRace: RaceRecord[];
   byRace: RaceRecord[];
 }
 
-const { overall, byRace } = Astro.props;
+const { overall, byMyRace, byRace } = Astro.props;
 
 function raceWinRate(r: RaceRecord) {
   const total = r.w + r.d + r.l;
@@ -24,11 +25,9 @@ function winRateClass(value: number | null) {
   return value > 50 ? "win-rate-positive" : "win-rate-negative";
 }
 
-const byRaceSorted = [...byRace].sort((a, b) => {
-  const ra = raceWinRate(a) ?? -1;
-  const rb = raceWinRate(b) ?? -1;
-  return rb - ra;
-});
+function sortByWinRate(rows: RaceRecord[]) {
+  return [...rows].sort((a, b) => (raceWinRate(b) ?? -1) - (raceWinRate(a) ?? -1));
+}
 
 const totalGames = overall.w + overall.d + overall.l;
 const winRateValue =
@@ -48,11 +47,37 @@ const overallWinRateClass = winRateClass(winRateValue);
     {winRate !== null && <span class={`win-rate ${overallWinRateClass}`}>({winRate}%)</span>}
   </div>
 
-  {byRaceSorted.length > 0 && (
+  {byMyRace.length > 0 && (
     <div class="race-summary">
-      <h3>Win Rate by Opponent Race</h3>
+      <h3>Playing As</h3>
       <ul class="race-list">
-        {byRaceSorted.map(r => {
+        {sortByWinRate(byMyRace).map(r => {
+          const rv = raceWinRate(r);
+          return (
+            <li class="race-row">
+              <span class="race-name">{r.race}</span>
+              <span class={`race-winrate ${winRateClass(rv)}`}>
+                {rv !== null ? `${rv.toFixed(1)}%` : "—"}
+              </span>
+              <span class="race-record">
+                <span class="w">{r.w}W</span>
+                <span class="sep">/</span>
+                <span class="d">{r.d}D</span>
+                <span class="sep">/</span>
+                <span class="l">{r.l}L</span>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  )}
+
+  {byRace.length > 0 && (
+    <div class="race-summary">
+      <h3>Against</h3>
+      <ul class="race-list">
+        {sortByWinRate(byRace).map(r => {
           const rv = raceWinRate(r);
           return (
             <li class="race-row">

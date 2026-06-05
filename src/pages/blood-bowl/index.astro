@@ -38,23 +38,31 @@ const uniqueMyRaces       = [...new Set(allGames.map(g => g.my_race))].sort();
 const uniqueOpponentRaces = [...new Set(allGames.map(g => g.opponent_race))].sort();
 
 const overall = { w: 0, l: 0, d: 0 };
-const raceMap = new Map<string, { w: number; l: number; d: number }>();
+const myRaceMap  = new Map<string, { w: number; l: number; d: number }>();
+const oppRaceMap = new Map<string, { w: number; l: number; d: number }>();
+
+function tally(map: Map<string, { w: number; l: number; d: number }>, key: string, result: string) {
+  if (!map.has(key)) map.set(key, { w: 0, l: 0, d: 0 });
+  const rec = map.get(key)!;
+  if (result === 'W') rec.w++;
+  else if (result === 'L') rec.l++;
+  else rec.d++;
+}
 
 for (const g of games) {
   if (g.result === 'W') overall.w++;
   else if (g.result === 'L') overall.l++;
   else overall.d++;
 
-  if (!raceMap.has(g.opponent_race)) {
-    raceMap.set(g.opponent_race, { w: 0, l: 0, d: 0 });
-  }
-  const rec = raceMap.get(g.opponent_race)!;
-  if (g.result === 'W') rec.w++;
-  else if (g.result === 'L') rec.l++;
-  else rec.d++;
+  tally(myRaceMap,  g.my_race,       g.result);
+  tally(oppRaceMap, g.opponent_race, g.result);
 }
 
-const byRace = Array.from(raceMap.entries())
+const byMyRace = Array.from(myRaceMap.entries())
+  .map(([race, rec]) => ({ race, ...rec }))
+  .sort((a, b) => a.race.localeCompare(b.race));
+
+const byRace = Array.from(oppRaceMap.entries())
   .map(([race, rec]) => ({ race, ...rec }))
   .sort((a, b) => a.race.localeCompare(b.race));
 
@@ -78,7 +86,7 @@ function pageUrl(p: number) {
 
 <BaseLayout title="Blood Bowl">
   <h1>Blood Bowl</h1>
-  <StatsCard overall={overall} byRace={byRace} />
+  <StatsCard overall={overall} byMyRace={byMyRace} byRace={byRace} />
   <h2>Games</h2>
   <form class="filters" method="get">
     <label>
