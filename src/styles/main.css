@@ -1,7 +1,35 @@
+/* Catppuccin Mocha */
 :root {
-  --white: #fff;
-  --primary: #189ab4;
-  --black: #010;
+  --ctp-base: #1e1e2e;
+  --ctp-mantle: #181825;
+  --ctp-crust: #11111b;
+  --ctp-surface0: #313244;
+  --ctp-surface1: #45475a;
+  --ctp-surface2: #585b70;
+  --ctp-overlay0: #6c7086;
+  --ctp-overlay1: #7f849c;
+  --ctp-overlay2: #9399b2;
+  --ctp-subtext0: #a6adc8;
+  --ctp-subtext1: #bac2de;
+  --ctp-text: #cdd6f4;
+  --ctp-lavender: #b4befe;
+  --ctp-blue: #89b4fa;
+  --ctp-sapphire: #74c7ec;
+  --ctp-sky: #89dceb;
+  --ctp-teal: #94e2d5;
+  --ctp-green: #a6e3a1;
+  --ctp-yellow: #f9e2af;
+  --ctp-peach: #fab387;
+  --ctp-maroon: #eba0ac;
+  --ctp-red: #f38ba8;
+  --ctp-mauve: #cba6f7;
+  --ctp-pink: #f5c2e7;
+  --ctp-flamingo: #f2cdcd;
+  --ctp-rosewater: #f5e0dc;
+
+  --primary: var(--ctp-blue);
+  --text-muted: var(--ctp-overlay1);
+  --border: var(--ctp-surface1);
 }
 
 html,
@@ -9,13 +37,16 @@ body {
   padding: 0;
   margin: 0;
   font-family: system-ui, sans-serif;
+  background-color: var(--ctp-base);
+  color: var(--ctp-text);
 }
+
 a {
-  color: var(--black);
+  color: var(--ctp-blue);
 }
 
 a:hover {
-  color: var(--primary);
+  color: var(--ctp-lavender);
 }
 
 /* Header */
@@ -24,6 +55,7 @@ header {
   padding: 0 1rem;
   display: flex;
   align-items: center;
+  background-color: var(--ctp-mantle);
 }
 
 header img {
@@ -41,7 +73,7 @@ header h1 {
 header h1 a,
 header h1 a:hover {
   text-decoration: none;
-  color: black;
+  color: var(--ctp-text);
 }
 
 /* Nav */
@@ -58,12 +90,16 @@ header h1 a:hover {
 }
 
 .nav-item:hover {
-  border-bottom: solid 2px #75e6da;
+  border-bottom: solid 2px var(--ctp-lavender);
 }
 
 .nav-item a {
   text-decoration: none;
-  color: black;
+  color: var(--ctp-subtext1);
+}
+
+.nav-item a:hover {
+  color: var(--ctp-text);
 }
 
 main {
@@ -74,12 +110,15 @@ main {
 
 code {
   display: inline-block;
-  background-color: #eaeff5;
+  background-color: var(--ctp-surface0);
+  color: var(--ctp-peach);
   padding: 0 0.25rem;
+  border-radius: 3px;
 }
 
 pre code {
   display: block;
   padding: 0.5rem;
   margin: 0.5rem 0;
+  color: var(--ctp-text);
 }

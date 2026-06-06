@@ -113,16 +113,16 @@ const overallWinRateClass = winRateClass(winRateValue);
     margin: 0 0.4rem;
     color: var(--text-muted, #888);
   }
-  .w { color: green; }
-  .l { color: red; }
-  .d { color: goldenrod; }
+  .w { color: var(--ctp-green); }
+  .l { color: var(--ctp-red); }
+  .d { color: var(--ctp-yellow); }
   .win-rate {
     font-size: 1rem;
     margin-left: 0.5rem;
   }
-  .win-rate-positive { color: #3a9a3a; }
-  .win-rate-negative { color: #c0392b; }
-  .win-rate-neutral { color: var(--text-muted, #888); }
+  .win-rate-positive { color: var(--ctp-green); }
+  .win-rate-negative { color: var(--ctp-red); }
+  .win-rate-neutral { color: var(--text-muted, var(--ctp-overlay1)); }
   .race-summaries {
     display: grid;
     grid-template-columns: repeat(2, auto);
@@ -145,7 +145,7 @@ const overallWinRateClass = winRateClass(winRateValue);
   }
   .race-table th {
     font-weight: bold;
-    color: var(--text-muted, #888);
+    color: var(--ctp-overlay1);
     font-size: 0.8rem;
   }
   .race-table td:nth-child(n+2) {
