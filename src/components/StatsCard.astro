@@ -51,52 +51,50 @@ const overallWinRateClass = winRateClass(winRateValue);
     {byMyRace.length > 0 && (
       <div class="race-summary">
         <h3>Playing As</h3>
-        <ul class="race-list">
-          {sortByWinRate(byMyRace).map(r => {
-            const rv = raceWinRate(r);
-            return (
-              <li class="race-row">
-                <span class="race-name">{r.race}</span>
-                <span class={`race-winrate ${winRateClass(rv)}`}>
-                  {rv !== null ? `${rv.toFixed(1)}%` : "—"}
-                </span>
-                <span class="race-record">
-                  <span class="w">{r.w}W</span>
-                  <span class="sep">/</span>
-                  <span class="d">{r.d}D</span>
-                  <span class="sep">/</span>
-                  <span class="l">{r.l}L</span>
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+        <table class="race-table">
+          <thead>
+            <tr><th>Race</th><th>Win%</th><th>W</th><th>D</th><th>L</th></tr>
+          </thead>
+          <tbody>
+            {sortByWinRate(byMyRace).map(r => {
+              const rv = raceWinRate(r);
+              return (
+                <tr>
+                  <td>{r.race}</td>
+                  <td class={winRateClass(rv)}>{rv !== null ? `${rv.toFixed(1)}%` : "—"}</td>
+                  <td class="w">{r.w}</td>
+                  <td class="d">{r.d}</td>
+                  <td class="l">{r.l}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     )}
 
     {byRace.length > 0 && (
       <div class="race-summary">
         <h3>Against</h3>
-        <ul class="race-list">
-          {sortByWinRate(byRace).map(r => {
-            const rv = raceWinRate(r);
-            return (
-              <li class="race-row">
-                <span class="race-name">{r.race}</span>
-                <span class={`race-winrate ${winRateClass(rv)}`}>
-                  {rv !== null ? `${rv.toFixed(1)}%` : "—"}
-                </span>
-                <span class="race-record">
-                  <span class="w">{r.w}W</span>
-                  <span class="sep">/</span>
-                  <span class="d">{r.d}D</span>
-                  <span class="sep">/</span>
-                  <span class="l">{r.l}L</span>
-                </span>
-              </li>
-            );
-          })}
-        </ul>
+        <table class="race-table">
+          <thead>
+            <tr><th>Race</th><th>Win%</th><th>W</th><th>D</th><th>L</th></tr>
+          </thead>
+          <tbody>
+            {sortByWinRate(byRace).map(r => {
+              const rv = raceWinRate(r);
+              return (
+                <tr>
+                  <td>{r.race}</td>
+                  <td class={winRateClass(rv)}>{rv !== null ? `${rv.toFixed(1)}%` : "—"}</td>
+                  <td class="w">{r.w}</td>
+                  <td class="d">{r.d}</td>
+                  <td class="l">{r.l}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     )}
   </div>
@@ -135,30 +133,25 @@ const overallWinRateClass = winRateClass(winRateValue);
     font-size: 1rem;
     margin: 0 0 0.5rem;
   }
-  .race-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  .race-row {
-    display: flex;
-    align-items: baseline;
-    gap: 0.75rem;
-  }
-  .race-name {
-    width: 14rem;
+  .race-table {
+    border-collapse: collapse;
     font-size: 0.9rem;
   }
-  .race-winrate {
-    font-weight: bold;
-    font-size: 0.95rem;
-    width: 4rem;
+  .race-table th,
+  .race-table td {
+    padding: 0.2rem 0.6rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border, #eee);
   }
-  .race-record {
-    font-size: 0.8rem;
+  .race-table th {
+    font-weight: bold;
     color: var(--text-muted, #888);
+    font-size: 0.8rem;
+  }
+  .race-table td:nth-child(n+2) {
+    text-align: right;
+  }
+  .race-table th:nth-child(n+2) {
+    text-align: right;
   }
 </style>

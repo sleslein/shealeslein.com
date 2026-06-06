@@ -86,8 +86,6 @@ function pageUrl(p: number) {
 
 <BaseLayout title="Blood Bowl">
   <h1>Blood Bowl</h1>
-  <StatsCard overall={overall} byMyRace={byMyRace} byRace={byRace} />
-  <h2>Games</h2>
   <form class="filters" method="get">
     <label>
       Platform
@@ -128,6 +126,8 @@ function pageUrl(p: number) {
     <button type="submit">Filter</button>
     {hasFilters && <a href="/blood-bowl">Clear</a>}
   </form>
+  <StatsCard overall={overall} byMyRace={byMyRace} byRace={byRace} />
+  <h2>Games</h2>
   <p><a href="/blood-bowl/add">+ Add game</a></p>
   <GameTable games={pagedGames} />
   <div class="pagination">
